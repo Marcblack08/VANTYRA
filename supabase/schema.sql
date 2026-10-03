@@ -57,3 +57,25 @@ create index if not exists products_active_idx on public.products(active);
 create index if not exists cart_items_user_idx on public.cart_items(user_id);
 create index if not exists orders_user_idx on public.orders(user_id);
 create index if not exists orders_status_idx on public.orders(status);
+
+
+insert into storage.buckets (id, name, public)
+values ('product-images','product-images',true)
+on conflict (id) do nothing;
+
+create policy "product_images_public_read"
+on storage.objects for select
+using (bucket_id = 'product-images');
+
+create policy "product_images_admin_insert"
+on storage.objects for insert
+with check (bucket_id = 'product-images' and public.is_admin());
+
+create policy "product_images_admin_update"
+on storage.objects for update
+using (bucket_id = 'product-images' and public.is_admin())
+with check (bucket_id = 'product-images' and public.is_admin());
+
+create policy "product_images_admin_delete"
+on storage.objects for delete
+using (bucket_id = 'product-images' and public.is_admin());
