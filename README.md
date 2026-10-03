@@ -1,21 +1,33 @@
 # VANTYRA
 
-Marketplace moderno construido con Next.js, Supabase y Tailwind CSS.
+Marketplace built with Next.js and Firebase.
 
 ## Stack
 - Next.js App Router
-- TypeScript
+- Firebase Authentication (Google)
+- Cloud Firestore
+- Firebase Storage
+- Firebase Admin SDK
 - Tailwind CSS
-- Lucide React
-- Supabase Auth / PostgreSQL / Storage
 
-## Inicio
-1. Copia .env.example a .env.local.
-2. Configura NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.
-3. Ejecuta supabase/schema.sql en el SQL Editor de Supabase.
-4. Activa Google OAuth en Supabase.
-5. npm install
-6. npm run dev
+## Environment
+Copy `.env.example` to `.env.local`.
 
-## Seguridad
-La autorización administrativa se aplica mediante RLS. Nunca expongas SUPABASE_SERVICE_ROLE_KEY al navegador.
+Public Firebase configuration may be present in the browser. Never expose `FIREBASE_PRIVATE_KEY`, service-account JSON, or other Admin credentials to client code.
+
+## Development
+```bash
+npm install
+npm run dev
+```
+
+## Firebase collections planned
+- users
+- categories
+- products
+- carts
+- favorites
+- orders
+- orderItems
+
+The next implementation stage enables Firestore catalog management and Firebase Storage uploads.
