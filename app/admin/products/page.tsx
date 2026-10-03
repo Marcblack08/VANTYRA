@@ -1,0 +1,11 @@
+import { createClient } from '@/lib/supabase/server'
+import { createProduct } from './actions'
+import { redirect } from 'next/navigation'
+export default async function ProductsAdmin(){
+ const supabase=await createClient()
+ const {data:{user}}=await supabase.auth.getUser()
+ if(!user) redirect('/login')
+ const {data:profile}=await supabase.from('profiles').select('role').eq('id',user.id).single()
+ if(profile?.role!=='admin') redirect('/')
+ const {data:products}=await supabase.from('products').select('id,name,price,sale_price,stock,active').order('created_at',{ascending:false})
+ return <main className="min-h-screen p-5 md:p-10"><div className="mx-auto max-w-6xl"><div className="flex items-end justify-between"><div><p className="text-sm uppercase tracking-[.2em] text-cyan-400">Vantyra Admin</p><h1 className="mt-2 text-4xl font-black">Productos</h1></div><a href="/admin" className="text-sm text-slate-400">Volver al panel</a></div><div className="mt-8 grid gap-8 lg:grid-cols-[380px_1fr]"><form action={createProduct} className="rounded-2xl border border-white/10 bg-white/[.03] p-6"><h2 className="text-xl font-bold">Nuevo producto</h2><div className="mt-5 space-y-4">{[['name','Nombre','text'],['description','Descripción','text'],['price','Precio','number'],['sale_price','Precio oferta','number'],['stock','Stock','number']].map(([n,l,t])=><label key={n} className="block text-sm text-slate-300">{l}<input name={n} type={t} step={t==='number'?'0.01':undefined} required={n==='name'||n==='price'||n==='stock'} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-3 outline-none focus:border-cyan-400"/></label>)}<button className="w-full rounded-xl bg-cyan-400 px-4 py-3 font-bold text-black">Crear producto</button></div></form><section className="rounded-2xl border border-white/10 bg-white/[.03] p-6"><h2 className="text-xl font-bold">Inventario</h2><div className="mt-5 divide-y divide-white/10">{products?.map(p=><div key={p.id} className="flex items-center justify-between py-4"><div><p className="font-semibold">{p.name}</p><p className="text-sm text-slate-400">Stock: {p.stock} · {p.active?'Activo':'Inactivo'}</p></div><strong>S/ {Number(p.sale_price ?? p.price).toFixed(2)}</strong></div>)}</div></section></div></div></main>
