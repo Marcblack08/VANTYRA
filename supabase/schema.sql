@@ -25,3 +25,35 @@ create policy cart_owner on public.cart_items for all using(user_id=auth.uid()) 
 create policy favorites_owner on public.favorites for all using(user_id=auth.uid()) with check(user_id=auth.uid());
 create policy orders_owner on public.orders for select using(user_id=auth.uid() or public.is_admin());
 create policy order_items_owner on public.order_items for select using(public.is_admin() or exists(select 1 from public.orders o where o.id=order_id and o.user_id=auth.uid()));
+
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, full_name, avatar_url, role)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'),
+    new.raw_user_meta_data->>'avatar_url',
+    case when lower(coalesce(new.email,'')) = 'marcjjbeltran08@gmail.com'
+         then 'admin'::public.user_role else 'customer'::public.user_role end
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute procedure public.handle_new_user();
+
+create index if not exists products_category_idx on public.products(category_id);
+create index if not exists products_active_idx on public.products(active);
+create index if not exists cart_items_user_idx on public.cart_items(user_id);
+create index if not exists orders_user_idx on public.orders(user_id);
+create index if not exists orders_status_idx on public.orders(status);
