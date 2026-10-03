@@ -2,6 +2,7 @@
 import { signInWithPopup } from 'firebase/auth'
 import { useState } from 'react'
 import { auth, googleProvider } from '@/lib/firebase/client'
+import { ensureUserProfile } from '@/lib/firebase/profile'
 
 export default function Login(){
   const [loading,setLoading]=useState(false)
@@ -9,7 +10,8 @@ export default function Login(){
   async function google(){
     setLoading(true); setError('')
     try {
-      await signInWithPopup(auth, googleProvider)
+      const result = await signInWithPopup(auth, googleProvider)
+      await ensureUserProfile(result.user)
       window.location.href = '/'
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo iniciar sesión.')
